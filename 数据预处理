@@ -1,0 +1,56 @@
+%导入数据;
+x=readtable('');
+%表格转为数组;
+a=table2array(x(1:10,1));
+%手动加入缺失值;
+a(8:15,:)=nan;
+%缺失值识别：
+nanid=isnan(a);
+%缺失值搜寻;
+[w(:,1),w(:,2)]=find(nanid==1);
+%异常值识别;
+a_test=a(:,3);%提取第三列数据;
+m_a=mean(a_test);%取平均值;
+s_a=std(a_test);%求标准差;
+index=abs(a_test-m_a)>3*s_a;%3seigema法则判断异常值：
+index1=find(index==1);%异常值的位置;
+%循环处理异常值;
+[m,n]=size(a);
+for i=1:n
+    a_get=a(:,i);
+    a_index{1,i}=find(abs(a_get-mean(a_get)>3*std(a_get));
+    plot(i,a_get,'bo');
+    hold on;
+    if length(a_index{1,i})>=1
+        plot(i,a_get(a_index{1,i}),'r','linewidth',1);%如果有异常把异常显示;
+        hold on;
+        %异常用插值补全;
+        label=1:m;
+        label1=label;
+        label1(a_index{1,i})=[];
+        yylabel=a_get;
+        yylabel(a_index{1,i})=[];
+        yylabel1=interp1(label1,yylabel,label,'spline');%三次样条插值数据;
+        a(:,i)=yylabel1;
+    end
+end
+%标准化;
+a1=zscore(a);%对列Z-score标准化;
+a2=(mapminmax(a,0,1));%对行标准化(归一化）;
+%降维;
+a_ld=tsne(a,'NumDimensions',2);%TSNE降维;
+figure;
+plot(a_ld(:,1),a_ld(:,2),'*','linewidth',1.5);
+figure;
+a_ld=pca(a,2);%PCA降维(主成分分析);
+plot(a_ld(:,1),a_ld(:,2),'*','linewidth',1.5);
+%相关性分析;
+[xgx,p_value]=corr(a,'type','pearson');%皮尔逊相关系数，xgx为相关系数矩阵，p_value为非零相关的假设检验值;
+%热力图;
+index_name={'','','',''};
+y_index=index_name;
+x_index=index_name;
+figure(1);
+H=heatmap(x_index,y_index,xgx,'FontSize',12,'FontName','宋体');
+H.Title='相关性分析系数检验矩阵';
+colormap(color_cell(1,1));%颜色;
